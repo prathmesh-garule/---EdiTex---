@@ -9,6 +9,7 @@
 #include <ncurses.h>
 
 #include "UI.h"
+
 #include "buffer.h"
 
 
@@ -76,10 +77,16 @@ curses_init();
 getmaxyx(stdscr, ht, wd);
 keypad(stdscr, true);
 
+// start_color();
+// init_pair(1, COLOR_CYAN, COLOR_BLACK);
+
+// 	mvprintw(ht,wd,"Prathmesh@");
+	// mvchgat(0, 0, -1, A_BLINK, 1, NULL);
 /* HELP MENU */
 	
 	attron(COLOR_PAIR(1));
-	mvprintw(ht/2 - 7, wd/2 -  17, "Welcome to ---EdiTeXt---");
+	mvprintw(ht/2 -7, wd/2 -  17, "Welcome to ---EdiTeXt---");
+   // mvprintw(ht/2+5 , wd/2-17 , " ---Prathemsh Garule---");
 
 
 	attroff(COLOR_PAIR(1));
@@ -87,6 +94,7 @@ keypad(stdscr, true);
 
 	attron(COLOR_PAIR(2));
 
+    
 
 	mvprintw(ht/2 - 5, wd/2 - 17, "CTRL+S OR F2 :  SAVE");
 	mvprintw(ht/2 - 4, wd/2 - 17, "CTRL+A OR F3 :  SAVE AND QUIT");
@@ -130,8 +138,78 @@ keypad(stdscr, true);
 	move(0, 0);
 
 
-    return 0;
+    while((ch = getch())){
+
+		switch (ch){
+			case KEY_UP: /*up arrow*/
+				if(y > 0 && bf != NULL && bf->prev != NULL){
+					bf = bf->prev;
+					if(x >= bf->num_chars){
+						x = bf->num_chars -1;	
+						move(--y, x);
+					}
+					else{
+						move(--y, x);
+					}
+				}
+				else  if( y == 0 && start->prev != NULL && bf->prev != NULL){
+					start = start->prev;
+					bf = bf->prev;
+					loadwin(start, 0);
+					move(y, x);
+				}
+				break;
 
 
+			case KEY_DOWN: /*down arrow*/
+				if(y < ht - 2 && bf != NULL){
+					if(bf->next != NULL){
+						bf = bf->next;
+						if(x >= bf->num_chars){
+							if(bf->num_chars  > 0){
+								x = bf->num_chars - 1;								
+							}
+							else{
+								x = 0;
+							}
+							move(++y, x);
+						}
+						else{
+							move(++y, x);
+						}
+					}
+				}
+				else if( y == ht - 2 && bf->next != NULL && start->next != NULL){
+					start = start->next;
+					bf = bf->next;
+					loadwin(start, 0);
+					move(y, x);
+				}
+				break;
+
+
+			case KEY_LEFT: /*left arrow*/
+				if(x > 0){
+					move(y, --x);
+				}
+				break;
+
+
+			case KEY_RIGHT: /*right arrow*/
+				if(x < LINEMAX - 1 && x < bf->num_chars - 1){
+					move(y, ++x);
+				}
+				break;
+
+        }
+    }
+
+    endwin();
+	close(fd);
+	bufDestroy(head);
+	return 0;    
 }
+
+
+
 
