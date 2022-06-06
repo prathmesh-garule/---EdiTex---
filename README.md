@@ -1,0 +1,2 @@
+# EdiTex
+ Command line editor
