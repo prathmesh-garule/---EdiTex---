@@ -43,4 +43,6 @@ void tildeall(){
     }
     refresh();
     move(0, 0);
+
+
 }
