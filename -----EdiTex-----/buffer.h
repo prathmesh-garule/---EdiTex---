@@ -53,7 +53,7 @@ buffer* lineRemove(buffer *bf, int y, int x);
 int lineSearch(char *search);
 int lineReplace(char *search, char *replace);
 
-void lineInit(buffer *bf);
+void Init_line(buffer *bf);
 void linePrint(buffer *bf);
 int lineFull(buffer *bf);
 int lineEmpty(buffer *bf);

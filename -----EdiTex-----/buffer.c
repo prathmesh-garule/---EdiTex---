@@ -16,7 +16,7 @@
 //This is to mallocate The size of line of Character
 
 
-void lineInit(buffer *bf){
+void Init_line(buffer *bf){
 	bf->line = (char *)malloc(sizeof(char) * LINEMAX);
 	bf->line = memset(bf->line, '\0', LINEMAX);
 
@@ -31,7 +31,7 @@ void bufInit(buffer *bf){
     bf->prev = NULL;
     bf ->cur_line =0;
     bf ->num_chars =0;
-    lineInit(bf);
+    Init_line(bf);
 
 }
 
@@ -50,7 +50,7 @@ void bufCreateNext(buffer *bf){
     bf = bf->next;
 
     bf->num_chars = 0;
-    lineInit(bf);
+    Init_line(bf);
 }
 
 //To Increase the Line number
@@ -96,7 +96,7 @@ void bufInsert(buffer *bf){
     bf->next->cur_line=bf->cur_line+1;
     bf->next -> num_chars =0;
 
-    lineInit(bf->next);
+    Init_line(bf->next);
 
 
 }
