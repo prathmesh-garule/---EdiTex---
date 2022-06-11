@@ -46,6 +46,8 @@ void bufPrintAll(buffer *bf);
 
 
 
+
+
 //line
 void lineInsert(buffer *bf, int loc, char ch);
 buffer* lineRemove(buffer *bf, int y, int x);

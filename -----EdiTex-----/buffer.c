@@ -145,6 +145,8 @@ void bufLoad(int fd, buffer *bf){
         }
         if(i < LINEMAX){
 
+            //WHen We are at the end of line We need to create New Buffer
+
             if(ch == '\n'){
                 
                 bufCreateNext(bf);
@@ -156,6 +158,7 @@ void bufLoad(int fd, buffer *bf){
                 i = 0;
                 continue;
             }
+            //otherwise W ewill Add thatr in same curernt Line
             else{
 
                 bf->line[i] = ch;
@@ -164,6 +167,7 @@ void bufLoad(int fd, buffer *bf){
             }
 
         }
+        //just ended
         else{
             
             bufCreateNext(bf);
