@@ -1,0 +1,52 @@
+C library function - perror()
+The C library function void perror(const char *str) prints a descriptive error message to stderr. First the string str is printed, followed by a colon then a space.
+
+
+What is O_rdwr?
+Open for writing only. O_RDWR. Open for reading and writing. The result is undefined if this flag is applied to a FIFO.
+
+
+// File Descrepter=fd
+//this is method to save the buffer 
+
+// matlab fd is will geive adress of open file
+//lseek = will return offset adress otherwise -1;
+
+
+
+
+
+
+memmove() is used to copy a block of memory from a location to another. It is declared in string.h
+
+// Copies "numBytes" bytes from address "from" to address "to"
+void * memmove(void *to, const void *from, size_t numBytes);
+
+
+
+The clrtoeol() and wclrtoeol() functions erase the current line from the cursor to the end of the line, inclusive, in the current or specified window. These functions do not update the cursor.
+
+
+
+
+https://www.gnu.org/software/guile-ncurses/manual/html_node/Getting-characters-from-the-keyboard.html
+KEY_BREAK	Break key
+KEY_DOWN	Arrow down
+KEY_UP	Arrow up
+KEY_LEFT	Arrow left
+KEY_RIGHT	Arrow right
+KEY_HOME	Home key
+KEY_BACKSPACE	Backspace
+KEY_F0	Function key zero
+KEY_DL	Delete line
+KEY_IL	Insert line
+KEY_DC	Delete character
+KEY_IC	Insert char or enter insert mode
+KEY_EIC	Exit insert char mode
+KEY_CLEAR	Clear screen
+KEY_EOS	Clear to end of screen
+KEY_EOL	Clear to end of line
+KEY_SF	Scroll 1 line forward
+KEY_SR	Scroll 1 line backward (reverse)
+KEY_NPAGE	Next page
+KEY_PPAGE	Previous page

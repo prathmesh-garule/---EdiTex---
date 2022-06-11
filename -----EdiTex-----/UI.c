@@ -10,9 +10,10 @@ void curses_init(){
     raw();
     curs_set(2);
     start_color();
-    init_pair(1, COLOR_CYAN, COLOR_BLACK); /*COLOR codes for ncurses*/
+    init_pair(1, COLOR_WHITE, COLOR_BLACK); /*COLOR codes for ncurses*/
+    init_pair(3,COLOR_CYAN, COLOR_BLACK);
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
-    init_pair(3, COLOR_WHITE, COLOR_BLACK);
+    // init_pair(3, COLOR_WHITE, COLOR_BLACK);
 
 
 
