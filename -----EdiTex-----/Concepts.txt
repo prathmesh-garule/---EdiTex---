@@ -35,6 +35,15 @@ The clrtoeol() and wclrtoeol() functions erase the current line from the cursor 
 
 
 
+The curs_set() function sets the appearance of the cursor based on the value of visibility:
+Value of visibility	Appearance of Cursor
+0	Invisible
+1	Terminal-specific normal mode
+2	Terminal-specific high visibility mode
+
+
+This function takes two strings s1 and s2 as an argument and finds the first occurrence of the sub-string s2 in the string s1. The process of matching does not include the terminating null-characters(‘\0’), but function stops there.
+
 
 
 What is ifdef and endif?
@@ -42,6 +51,13 @@ ifdef means "if the following is defined" while ifndef means "if the following i
 
 
 lssek = it return offset adress , (i am using to check Wheather it Saved or Not)
+
+
+
+The curses clear() function doesn't just clear the screen; it clears the curses internal representation of the state of your screen. Your actual screen won't be cleared until you call refresh() . If you just want to clear the screen immediately, you should find another way to do it
+
+
+The clrtoeol() and wclrtoeol() routines erase the current line to the right of the cursor, inclusive, to the end of the current line.
 
 
 https://www.gnu.org/software/guile-ncurses/manual/html_node/Getting-characters-from-the-keyboard.html

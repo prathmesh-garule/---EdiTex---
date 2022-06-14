@@ -20,9 +20,10 @@ void curses_init(){
 }
 
 /*Renders the window from the first line i.e. Y = 0, and the "start" buffer pointer.*/
+// printing Whaterevr store in buffer:
 void loadwin(buffer *bf, int y){
     clear();
-    attron(COLOR_PAIR(3));
+    attron(COLOR_PAIR(1));
     int x = 0;
     while(bf != NULL){
         mvprintw(y, x, "%s", bf->line);

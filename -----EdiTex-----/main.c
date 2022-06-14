@@ -445,7 +445,7 @@ keypad(stdscr, true);
 		    case 6: /*CTRL-F*/
 			case KEY_F(5): /*search*/
 				temp2 = head;
-				attron(COLOR_PAIR(1));
+				attron(COLOR_PAIR(3));
 				move(ht - 1, 0);
 				clrtoeol();
 				mvprintw(ht - 1, 0, "Enter Search String: ");
@@ -458,10 +458,11 @@ keypad(stdscr, true);
 					while(x >= 0 && x < temp2->num_chars - 1){
 
 						srch = strstr(temp2->line + x, str);
+						//return to pointer to first occ of str
 						if(srch != NULL){
 							x = temp2->curloc = srch - temp2->line;
 							bf = temp2;
-							attroff(COLOR_PAIR(1));
+							attroff(COLOR_PAIR(3));
 							if(temp2->cur_line - start->cur_line >= 0 && temp2->cur_line - start->cur_line < ht - 1){
 								y = temp2->cur_line - start->cur_line ;
 								move(y, x);
@@ -469,22 +470,24 @@ keypad(stdscr, true);
 							else{
 								y = 0;
 								start = temp2;
+							
 								loadwin(start, 0);
 								
 							}
-							attron(COLOR_PAIR(1));
+							attron(COLOR_PAIR(3));
 							move(ht - 1, 0);
 							clrtoeol();
 							mvprintw(ht - 1, 0, "ENTER : search next ANY: exit search");
 							move(y , x);
 							refresh();
+
 							if((ch = getch()) != ERR){
 								if(ch == '\n'){
 									x++;
 								}
 								else{
 									srchflag = 1;
-									attroff(COLOR_PAIR(1));
+									attroff(COLOR_PAIR(3));
 									move(y, x);
 									break;
 								}
@@ -518,93 +521,93 @@ keypad(stdscr, true);
 
 
 
-			case 18: /*CTRL-R*/
-			case KEY_F(6): /*search replace*/
-				temp2 = head;
-				attron(COLOR_PAIR(1));
-				move(ht - 1, 0);
-				clrtoeol();
-				echo();
-				mvprintw(ht - 1, 0, "Enter Search String: ");
-				refresh();
-				mvscanw(ht - 1, strlen("Enter Search String: "), "%[^\n]s", str);
-				clrtoeol();
-				mvprintw(ht - 1, 0, "Enter Replace String: ");
-				refresh();
-				mvscanw(ht - 1, strlen("Enter Replace String: "), "%[^\n]s", rstr);				
-				noecho();
-				while(temp2->next != NULL){
-					x = 0;
-					while(x >= 0 && x < temp2->num_chars - 1){
+			// case 18: /*CTRL-R*/
+			// case KEY_F(6): /*search replace*/
+			// 	temp2 = head;
+			// 	attron(COLOR_PAIR(1));
+			// 	move(ht - 1, 0);
+			// 	clrtoeol();
+			// 	echo();
+			// 	mvprintw(ht - 1, 0, "Enter Search String: ");
+			// 	refresh();
+			// 	mvscanw(ht - 1, strlen("Enter Search String: "), "%[^\n]s", str);
+			// 	clrtoeol();
+			// 	mvprintw(ht - 1, 0, "Enter Replace String: ");
+			// 	refresh();
+			// 	mvscanw(ht - 1, strlen("Enter Replace String: "), "%[^\n]s", rstr);				
+			// 	noecho();
+			// 	while(temp2->next != NULL){
+			// 		x = 0;
+			// 		while(x >= 0 && x < temp2->num_chars - 1){
 
-						srch = strstr(temp2->line + x, str);
-						if(srch != NULL){
-							x = temp2->curloc = srch - temp2->line;
-							bf = temp2;
-							attroff(COLOR_PAIR(1));
-							if(temp2->cur_line - start->cur_line >= 0 && temp2->cur_line - start->cur_line < ht - 1){
-								y = temp2->cur_line - start->cur_line ;
-								move(y, x);
-							}
-							else{
-								y = 0;
-								start = temp2;
-								loadwin(start, 0);
+			// 			srch = strstr(temp2->line + x, str);
+			// 			if(srch != NULL){
+			// 				x = temp2->curloc = srch - temp2->line;
+			// 				bf = temp2;
+			// 				attroff(COLOR_PAIR(1));
+			// 				if(temp2->cur_line - start->cur_line >= 0 && temp2->cur_line - start->cur_line < ht - 1){
+			// 					y = temp2->cur_line - start->cur_line ;
+			// 					move(y, x);
+			// 				}
+			// 				else{
+			// 					y = 0;
+			// 					start = temp2;
+			// 					loadwin(start, 0);
 								
-							}
-							attron(COLOR_PAIR(1));
-							move(ht - 1, 0);
-							clrtoeol();
-							mvprintw(ht - 1, 0, "ENTER: search next CTRL+R OR F(6): replace ANY: exit");
-							move(y , x);
-							refresh();
-							if((ch = getch())){
-								if(ch == '\n'){
-									x++;
-								}
-								else if((ch == KEY_F(6) || ch == 18) && (x + strlen(rstr) - 1 < LINEMAX)){
-									for(i = 0; i < strlen(str); i++){
-										memmove((bf->line + x), (bf->line + x + 1), bf->num_chars - x - 1);
-										(bf->num_chars)--;
+			// 				}
+			// 				attron(COLOR_PAIR(1));
+			// 				move(ht - 1, 0);
+			// 				clrtoeol();
+			// 				mvprintw(ht - 1, 0, "ENTER: search next CTRL+R OR F(6): replace ANY: exit");
+			// 				move(y , x);
+			// 				refresh();
+			// 				if((ch = getch())){
+			// 					if(ch == '\n'){
+			// 						x++;
+			// 					}
+			// 					else if((ch == KEY_F(6) || ch == 18) && (x + strlen(rstr) - 1 < LINEMAX)){
+			// 						for(i = 0; i < strlen(str); i++){
+			// 							memmove((bf->line + x), (bf->line + x + 1), bf->num_chars - x - 1);
+			// 							(bf->num_chars)--;
 										
-									}
-									i = 0;
-									for( i = 0; i < strlen(rstr); i++){
-										lineInsert(bf, x + i, rstr[i]);
-									}
-									i = 0;
-									attroff(COLOR_PAIR(1));
-									loadwin(start, 0);
-									attron(COLOR_PAIR(1));
-								}
-								else{
-									srchflag = 1;
-									attroff(COLOR_PAIR(1));
-									move(y, x);
-									break;
-								}
-							}
+			// 						}
+			// 						i = 0;
+			// 						for( i = 0; i < strlen(rstr); i++){
+			// 							lineInsert(bf, x + i, rstr[i]);
+			// 						}
+			// 						i = 0;
+			// 						attroff(COLOR_PAIR(1));
+			// 						loadwin(start, 0);
+			// 						attron(COLOR_PAIR(1));
+			// 					}
+			// 					else{
+			// 						srchflag = 1;
+			// 						attroff(COLOR_PAIR(1));
+			// 						move(y, x);
+			// 						break;
+			// 					}
+			// 				}
 
-						}
-						else{
-							x++;
-						}
-					}
-					if(srchflag == 1)
-						break;
-					temp2 = temp2->next;
-				}
-				if(srchflag == 0){
-					attron(COLOR_PAIR(1));
-					move(ht - 1, 0);
-					clrtoeol();
-					mvprintw(ht - 1, 0, "END OF SEARCH");
-					attroff(COLOR_PAIR(1));
-					refresh();
-					ch = getch();
-				}
-				srchflag = 0;
-				break;
+			// 			}
+			// 			else{
+			// 				x++;
+			// 			}
+			// 		}
+			// 		if(srchflag == 1)
+			// 			break;
+			// 		temp2 = temp2->next;
+			// 	}
+			// 	if(srchflag == 0){
+			// 		attron(COLOR_PAIR(1));
+			// 		move(ht - 1, 0);
+			// 		clrtoeol();
+			// 		mvprintw(ht - 1, 0, "END OF SEARCH");
+			// 		attroff(COLOR_PAIR(1));
+			// 		refresh();
+			// 		ch = getch();
+			// 	}
+			// 	srchflag = 0;
+			// 	break;
 
 
 
@@ -642,6 +645,7 @@ keypad(stdscr, true);
 					}
 					else if(ch == 24 || ch == KEY_F(7)){
 						x = xstate;
+						// memove so that it will wont appear
 						for(i = 0; i < strlen(copybuf); i++){
 							memmove((bf->line + x), (bf->line + x + 1), bf->num_chars - x - 1);
 							(bf->num_chars)--;
@@ -687,24 +691,28 @@ keypad(stdscr, true);
 				xstate = x;
 				memset(copybuf, '\0', LINEMAX);
 				while((ch = getch()) != ERR){
+					//Take input from userrr
+					//jar right then we have to selct right and ADD
 					if(ch == KEY_RIGHT && x < LINEMAX - 1 && x < bf->num_chars - 1){
 						copybuf[cpyi++] = bf->line[x];
-						addch(bf->line[x] | A_STANDOUT);
+						addch(bf->line[x] | A_STANDOUT);//highlight-attribute
 						move(y, x++);
 					}
 					else if((ch == KEY_LEFT) && x >= 0 && x > xstate){
 						
 						move(y, --x);						
 						copybuf[--cpyi] = '\0';
-						addch(bf->line[x] | A_NORMAL);
+						addch(bf->line[x] | A_NORMAL);//de -highlight -deselct
 
 					}
+					//coped line 
 					else if(ch == 3 || ch == KEY_F(8)){
 						x = xstate;
 						loadwin(start, 0);
 						move(y, x);
 						break;
 					}
+					// dont want then fill with /0 
 					else {
 						loadwin(start, 0);
 						memset(copybuf, '\0', LINEMAX);
@@ -728,10 +736,11 @@ keypad(stdscr, true);
 
 
 
-
+//what ever in copy buf just print (insert)
 			case 22: /*CTRL-V*/
 			case KEY_F(9): /*paste ctrl+V*/
 				if(strlen(copybuf) != 0 && copybuf[0] != '\0' && x + strlen(copybuf) - 1 < LINEMAX){
+
 					for(i = 0; i < strlen(copybuf); i++){
 						lineInsert(bf, x + i, copybuf[i]);
 					}
