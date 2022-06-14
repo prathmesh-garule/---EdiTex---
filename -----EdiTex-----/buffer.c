@@ -133,10 +133,12 @@ void bufSave(int fd, buffer *bf){
 }
 
 
+
 //adss the data into the buffers from text file 
 void bufLoad(int fd, buffer *bf){
     char ch;
     int err, linenum = 0, i = 0;
+    
     while((err = read(fd, &ch, 1))){
         if(err == -1){
             INFO;

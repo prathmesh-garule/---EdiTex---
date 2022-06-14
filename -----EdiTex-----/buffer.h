@@ -6,8 +6,9 @@
 
 /*
  * increase the value to your screen width as shown on 
- * devtext start screen for full width experience
+ * Editext start screen for full width experience
 */
+
 
 #define LINEMAX 180
 
@@ -22,7 +23,7 @@ typedef struct buffer{
 
 	int cur_line;
 	int num_chars;
-	int curX;
+	int curloc;
 	char *line;
 
 }buffer;
