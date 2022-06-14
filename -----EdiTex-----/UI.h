@@ -6,5 +6,8 @@
 
 void curses_init();
 void loadwin(buffer *bf, int y);
-void tildeall();
+
+
+void help_wind(int ht, int wd);
+void help2(int ht, int wd);
 #endif
