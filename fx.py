@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
 from comp_env import environment
 
 # Initialize environment
@@ -11,7 +12,17 @@ env = environment()
 # Fetch training data
 X_train, y_train = env.get_training_data()
 
-# Define a simple neural network model
+# One-hot encode the 'sym' column
+encoder = OneHotEncoder(sparse=False)
+X_train_sym_encoded = encoder.fit_transform(X_train[['sym']])
+
+# Append encoded 'sym' to the original DataFrame
+X_train_encoded = pd.concat([X_train, pd.DataFrame(X_train_sym_encoded, columns=encoder.categories_[0])], axis=1)
+
+# Remove 'sym' column as it is now encoded
+X_train_encoded.drop(columns=['sym'], inplace=True)
+
+# Define a neural network model that includes the encoded 'sym'
 class VolumePredictor(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(VolumePredictor, self).__init__()
@@ -28,10 +39,19 @@ class VolumePredictor(nn.Module):
 # Step 1: Prepare the prediction function
 def predict(input_df, submission) -> pd.DataFrame:
     # Features used for prediction
-    features = ['volumeLastMinute', 'volumeLastHour', 'spread', 'mid']
+    features = ['volumeLastMinute', 'volumeLastHour', 'spread', 'mid'] + list(encoder.categories_[0])
 
+    # One-hot encode 'sym' in the input_df
+    input_sym_encoded = encoder.transform(input_df[['sym']])
+    
+    # Append encoded 'sym' to the input DataFrame
+    input_encoded = pd.concat([input_df, pd.DataFrame(input_sym_encoded, columns=encoder.categories_[0])], axis=1)
+    
+    # Remove the original 'sym' column
+    input_encoded.drop(columns=['sym'], inplace=True)
+    
     # Convert input_df to tensor
-    X_input = torch.tensor(input_df[features].values, dtype=torch.float32)
+    X_input = torch.tensor(input_encoded[features].values, dtype=torch.float32)
 
     # Step 2: Initialize the trained model
     input_size = len(features)
@@ -43,7 +63,7 @@ def predict(input_df, submission) -> pd.DataFrame:
     # Step 3: Load pre-trained model if necessary or define training
     # For this example, let's train the model within this function
     # Prepare the data (convert to PyTorch tensors)
-    X_train_tensor = torch.tensor(X_train[features].values, dtype=torch.float32)
+    X_train_tensor = torch.tensor(X_train_encoded[features].values, dtype=torch.float32)
     y_train_tensor = torch.tensor(y_train.values, dtype=torch.float32).view(-1, 1)
 
     # Step 4: Train the model
