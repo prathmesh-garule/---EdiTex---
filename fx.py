@@ -1,16 +1,16 @@
 import pandas as pd
-from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.impute import SimpleImputer
 from comp_env import environment
 
-# Initialize environment
+# Initialize the environment
 env = environment()
 
 # Fetch training data
 X_train, y_train = env.get_training_data()
 
-# Reset indices to avoid index mismatches
+# Reset indices to avoid mismatches
 X_train.reset_index(drop=True, inplace=True)
 y_train.reset_index(drop=True, inplace=True)
 
@@ -21,25 +21,23 @@ X_train_sym_encoded = encoder.fit_transform(X_train[['sym']])
 # Append encoded 'sym' to the original DataFrame
 X_train_encoded = pd.concat([X_train, pd.DataFrame(X_train_sym_encoded, columns=encoder.get_feature_names_out(['sym']))], axis=1)
 
-# Remove the 'sym' column as it is now encoded
+# Remove the original 'sym' column as it's now encoded
 X_train_encoded.drop(columns=['sym'], inplace=True)
 
-# Features used for training the model
+# Impute missing values
+imputer = SimpleImputer(strategy='mean')
+X_train_encoded = pd.DataFrame(imputer.fit_transform(X_train_encoded), columns=X_train_encoded.columns)
+
+# Define features used for training
 features = ['volumeLastMinute', 'volumeLastHour', 'spread', 'mid'] + list(encoder.get_feature_names_out(['sym']))
 
-# Handle missing values by filling with the mean
-imputer = SimpleImputer(strategy='mean')
-X_train_encoded[features] = imputer.fit_transform(X_train_encoded[features])
-
-# Step 1: Initialize a simple Linear Regression model
+# Initialize and train the linear regression model
 model = LinearRegression()
-
-# Step 2: Train the model on the training dataset
 model.fit(X_train_encoded[features], y_train['volumeNextHour'])
 
-# Step 3: Define the prediction function
+# Prediction function
 def predict(input_df, submission) -> pd.DataFrame:
-    # Reset index for input_df to avoid index mismatch
+    # Reset index for the input_df
     input_df.reset_index(drop=True, inplace=True)
     
     # One-hot encode 'sym' in the input_df
@@ -48,17 +46,21 @@ def predict(input_df, submission) -> pd.DataFrame:
     # Append encoded 'sym' to the input DataFrame
     input_encoded = pd.concat([input_df, pd.DataFrame(input_sym_encoded, columns=encoder.get_feature_names_out(['sym']))], axis=1)
     
-    # Remove the original 'sym' column
+    # Remove the 'sym' column after encoding
     input_encoded.drop(columns=['sym'], inplace=True)
     
     # Handle missing values in the test data
-    input_encoded[features] = imputer.transform(input_encoded[features])
+    input_encoded = pd.DataFrame(imputer.transform(input_encoded), columns=input_encoded.columns)
     
     # Predict the next hour's volume
     submission['volumeNextHour'] = model.predict(input_encoded[features])
     
+    # Ensure the length of predictions matches the submission dataframe
+    if len(submission) != len(input_encoded):
+        raise ValueError(f"Length of submission ({len(submission)}) does not match the input data ({len(input_encoded)}).")
+    
     return submission
 
-# Step 4: Evaluate the model using the competition's environment
+# Evaluate the model
 results = env.evaluate_model(predict, submit=True)
 print(results)
