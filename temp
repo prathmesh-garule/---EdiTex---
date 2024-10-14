@@ -1,0 +1,6 @@
+# Remove 'sym' column as it is now encoded
+X_train_encoded.drop(columns=['sym'], inplace=True)
+
+# Handle missing values by filling with the mean
+imputer = SimpleImputer(strategy='mean')
+X_train_encoded[features] = imputer.fit_transform(X_train_encoded[features])
