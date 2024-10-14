@@ -15,14 +15,17 @@ encoder = OneHotEncoder(sparse_output=False)
 X_train_sym_encoded = encoder.fit_transform(X_train[['sym']])
 
 # Append encoded 'sym' to the original DataFrame
-X_train_encoded = pd.concat([X_train, pd.DataFrame(X_train_sym_encoded, columns=encoder.get_feature_names_out(['sym']))], axis=1)
+X_train_encoded = pd.concat([X_train.reset_index(drop=True), pd.DataFrame(X_train_sym_encoded, columns=encoder.get_feature_names_out(['sym']))], axis=1)
 
-# Remove 'sym' column as it is now encoded
+# Remove the 'sym' column as it is now encoded
 X_train_encoded.drop(columns=['sym'], inplace=True)
 
 # Handle missing values by filling with the mean
 imputer = SimpleImputer(strategy='mean')
 X_train_encoded[features] = imputer.fit_transform(X_train_encoded[features])
+
+# Ensure X_train_encoded and y_train have the same number of rows
+X_train_encoded = X_train_encoded.loc[y_train.index]
 
 # Features used for training the model
 features = ['volumeLastMinute', 'volumeLastHour', 'spread', 'mid'] + list(encoder.get_feature_names_out(['sym']))
@@ -39,7 +42,7 @@ def predict(input_df, submission) -> pd.DataFrame:
     input_sym_encoded = encoder.transform(input_df[['sym']])
     
     # Append encoded 'sym' to the input DataFrame
-    input_encoded = pd.concat([input_df, pd.DataFrame(input_sym_encoded, columns=encoder.get_feature_names_out(['sym']))], axis=1)
+    input_encoded = pd.concat([input_df.reset_index(drop=True), pd.DataFrame(input_sym_encoded, columns=encoder.get_feature_names_out(['sym']))], axis=1)
     
     # Remove the original 'sym' column
     input_encoded.drop(columns=['sym'], inplace=True)
