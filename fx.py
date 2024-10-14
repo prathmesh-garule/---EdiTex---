@@ -1,72 +1,49 @@
 import pandas as pd
-import numpy as np
-from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
-from comp_env import environment
 
-# Initialize the environment
-env = environment()
-
-# Fetch training data
+# Assuming X_train, y_train are already loaded
 X_train, y_train = env.get_training_data()
 
-# Reset indices to avoid mismatches
-X_train.reset_index(drop=True, inplace=True)
-y_train.reset_index(drop=True, inplace=True)
-
-# One-hot encode the 'sym' column
-encoder = OneHotEncoder(sparse_output=False)
+# One-hot encode 'sym' column
+encoder = OneHotEncoder(sparse=False)
 X_train_sym_encoded = encoder.fit_transform(X_train[['sym']])
 
 # Append encoded 'sym' to the original DataFrame
-X_train_encoded = pd.concat([X_train, pd.DataFrame(X_train_sym_encoded, columns=encoder.get_feature_names_out(['sym']))], axis=1)
+X_train_encoded = pd.concat([X_train.reset_index(drop=True), 
+                             pd.DataFrame(X_train_sym_encoded, columns=encoder.get_feature_names_out())], axis=1)
 
-# Remove the original 'sym' column as it's now encoded
+# Remove the original 'sym' column as it is now encoded
 X_train_encoded.drop(columns=['sym'], inplace=True)
 
-# Impute missing values
+# Impute missing values in X_train_encoded and y_train using SimpleImputer or drop rows with NaNs
 imputer = SimpleImputer(strategy='mean')
 X_train_encoded = pd.DataFrame(imputer.fit_transform(X_train_encoded), columns=X_train_encoded.columns)
 
-# Convert data types explicitly to avoid issues with numpy types
-X_train_encoded = X_train_encoded.astype(float)
-y_train = y_train.astype(float)
+# Drop rows with NaNs in y_train
+non_nan_mask = y_train.notna().all(axis=1)
+X_train_encoded = X_train_encoded[non_nan_mask].reset_index(drop=True)
+y_train = y_train[non_nan_mask].reset_index(drop=True)
 
-# Define features used for training
-features = ['volumeLastMinute', 'volumeLastHour', 'spread', 'mid'] + list(encoder.get_feature_names_out(['sym']))
+# Split the data into training and validation sets
+X_train_split, X_val_split, y_train_split, y_val_split = train_test_split(X_train_encoded, y_train, test_size=0.2, random_state=42)
 
-# Initialize and train the linear regression model
+# Train a simple linear regression model
 model = LinearRegression()
-model.fit(X_train_encoded[features], y_train['volumeNextHour'])
+model.fit(X_train_split, y_train_split['volumeNextHour'])
 
-# Prediction function
+# Define the predict function
 def predict(input_df, submission) -> pd.DataFrame:
-    # Reset index for the input_df
-    input_df.reset_index(drop=True, inplace=True)
-    
-    # One-hot encode 'sym' in the input_df
-    input_sym_encoded = encoder.transform(input_df[['sym']])
-    
-    # Append encoded 'sym' to the input DataFrame
-    input_encoded = pd.concat([input_df, pd.DataFrame(input_sym_encoded, columns=encoder.get_feature_names_out(['sym']))], axis=1)
-    
-    # Remove the 'sym' column after encoding
+    input_encoded = pd.concat([input_df.reset_index(drop=True), 
+                               pd.DataFrame(encoder.transform(input_df[['sym']]), 
+                                            columns=encoder.get_feature_names_out())], axis=1)
     input_encoded.drop(columns=['sym'], inplace=True)
-    
-    # Handle missing values in the test data
     input_encoded = pd.DataFrame(imputer.transform(input_encoded), columns=input_encoded.columns)
     
-    # Convert data types explicitly to avoid issues with numpy types
-    input_encoded = input_encoded.astype(float)
-    
-    # Predict the next hour's volume
-    submission['volumeNextHour'] = model.predict(input_encoded[features])
-    
-    # Ensure the length of predictions matches the submission dataframe
-    if len(submission) != len(input_encoded):
-        raise ValueError(f"Length of submission ({len(submission)}) does not match the input data ({len(input_encoded)}).")
-    
+    predictions = model.predict(input_encoded)
+    submission['volumeNextHour'] = predictions
     return submission
 
 # Evaluate the model
