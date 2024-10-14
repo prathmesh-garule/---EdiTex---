@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.impute import SimpleImputer
@@ -28,6 +29,10 @@ X_train_encoded.drop(columns=['sym'], inplace=True)
 imputer = SimpleImputer(strategy='mean')
 X_train_encoded = pd.DataFrame(imputer.fit_transform(X_train_encoded), columns=X_train_encoded.columns)
 
+# Convert data types explicitly to avoid issues with numpy types
+X_train_encoded = X_train_encoded.astype(float)
+y_train = y_train.astype(float)
+
 # Define features used for training
 features = ['volumeLastMinute', 'volumeLastHour', 'spread', 'mid'] + list(encoder.get_feature_names_out(['sym']))
 
@@ -51,6 +56,9 @@ def predict(input_df, submission) -> pd.DataFrame:
     
     # Handle missing values in the test data
     input_encoded = pd.DataFrame(imputer.transform(input_encoded), columns=input_encoded.columns)
+    
+    # Convert data types explicitly to avoid issues with numpy types
+    input_encoded = input_encoded.astype(float)
     
     # Predict the next hour's volume
     submission['volumeNextHour'] = model.predict(input_encoded[features])
