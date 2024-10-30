@@ -1,14 +1,17 @@
 import json
-import sys
 
-def find_and_replace(json_file, find_str, replace_str):
+def find_and_replace_in_json(json_file):
+    # Hardcoded strings to find and replace
+    find_str = "uami"
+    replace_str = "new_uami"
+
     try:
         # Load JSON data from the file
         with open(json_file, 'r') as file:
             data = json.load(file)
 
-        # Convert JSON to a string for easy find-and-replace
-        data_str = json.dumps(data)
+        # Convert JSON to a string for find-and-replace, handling newlines
+        data_str = json.dumps(data, indent=4)
         
         # Count occurrences of the string to replace
         count = data_str.count(find_str)
@@ -32,11 +35,6 @@ def find_and_replace(json_file, find_str, replace_str):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-if __name__ == "__main__":
-    # File name and strings to find and replace
-    json_file = input("Enter JSON file name: ")
-    find_str = input("Enter the string to find: ")
-    replace_str = input("Enter the replacement string: ")
-
-    # Call the function
-    find_and_replace(json_file, find_str, replace_str)
+# Call the function with the JSON file name
+json_file = "template.json"  # Replace with your JSON file name
+find_and_replace_in_json(json_file)
