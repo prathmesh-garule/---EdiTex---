@@ -1,45 +1,73 @@
-import pandas as pd
-from sklearn.preprocessing import LabelEncoder
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
-from sklearn.impute import SimpleImputer
+import sys
 
-# Assuming X_train, y_train are already loaded
-X_train, y_train = env.get_training_data()
+# Define the total number of possible characters (26 lowercase English letters)
+ALPHABET_SIZE = 26
 
-# Label encode the 'sym' column
-label_encoder = LabelEncoder()
-X_train['sym_encoded'] = label_encoder.fit_transform(X_train['sym'])
+# Function to convert a character to its index
+def char_to_index(c):
+    return ord(c) - ord('a')
 
-# Remove the original 'sym' column as it is now encoded
-X_train_encoded = X_train.drop(columns=['sym'])
+# Function to convert an index to its corresponding character
+def index_to_char(i):
+    return chr(i + ord('a'))
 
-# Impute missing values in X_train_encoded and y_train using SimpleImputer or drop rows with NaNs
-imputer = SimpleImputer(strategy='mean')
-X_train_encoded = pd.DataFrame(imputer.fit_transform(X_train_encoded), columns=X_train_encoded.columns)
-
-# Drop rows with NaNs in y_train
-non_nan_mask = y_train.notna().all(axis=1)
-X_train_encoded = X_train_encoded[non_nan_mask].reset_index(drop=True)
-y_train = y_train[non_nan_mask].reset_index(drop=True)
-
-# Split the data into training and validation sets
-X_train_split, X_val_split, y_train_split, y_val_split = train_test_split(X_train_encoded, y_train, test_size=0.2, random_state=42)
-
-# Train a simple linear regression model
-model = LinearRegression()
-model.fit(X_train_split, y_train_split['volumeNextHour'])
-
-# Define the predict function
-def predict(input_df, submission) -> pd.DataFrame:
-    input_df['sym_encoded'] = label_encoder.transform(input_df['sym'])
-    input_df_encoded = input_df.drop(columns=['sym'])
-    input_encoded = pd.DataFrame(imputer.transform(input_df_encoded), columns=input_df_encoded.columns)
+# Floyd-Warshall algorithm to compute shortest paths between all pairs of nodes
+def floyd_warshall(graph):
+    # Initialize the graph where graph[i][j] is the shortest time from node i to j
+    dist = [[float('inf')] * ALPHABET_SIZE for _ in range(ALPHABET_SIZE)]
     
-    predictions = model.predict(input_encoded)
-    submission['volumeNextHour'] = predictions
-    return submission
+    # Initialize the direct connections from the graph
+    for u in range(ALPHABET_SIZE):
+        dist[u][u] = 0  # No time required to convert a character to itself
+    
+    for u in range(ALPHABET_SIZE):
+        for v, time in graph[u]:
+            dist[u][v] = min(dist[u][v], time)  # Minimum time for direct conversion
+    
+    # Apply Floyd-Warshall to compute the shortest paths between all pairs of nodes
+    for k in range(ALPHABET_SIZE):
+        for i in range(ALPHABET_SIZE):
+            for j in range(ALPHABET_SIZE):
+                if dist[i][j] > dist[i][k] + dist[k][j]:
+                    dist[i][j] = dist[i][k] + dist[k][j]
+    
+    return dist
 
-# Evaluate the model
-results = env.evaluate_model(predict, submit=True)
-print(results)
+def minimum_conversion_time(strPwd, strInter, firstSeq, secSeq, timeSeq):
+    # Initialize the graph with adjacency list representation
+    graph = [[] for _ in range(ALPHABET_SIZE)]
+    
+    # Build the graph based on the provided sequences
+    for i in range(len(firstSeq)):
+        u = char_to_index(firstSeq[i])
+        v = char_to_index(secSeq[i])
+        time = timeSeq[i]
+        graph[u].append((v, time))  # u -> v with time
+    
+    # Use Floyd-Warshall to find the shortest paths between all pairs of characters
+    shortest_paths = floyd_warshall(graph)
+    
+    # Now compute the total time for converting strPwd to strInter
+    total_time = 0
+    for p_char, i_char in zip(strPwd, strInter):
+        p_index = char_to_index(p_char)
+        i_index = char_to_index(i_char)
+        
+        # The minimum time to convert p_char to i_char
+        total_time += shortest_paths[p_index][i_index]
+    
+    return total_time
+
+# Read input
+strPwd = input().strip()
+strInter = input().strip()
+count = int(input().strip())
+
+firstSeq = input().strip().split()
+countM = int(input().strip())
+secSeq = input().strip().split()
+countP = int(input().strip())
+timeSeq = list(map(int, input().strip().split()))
+
+# Output the result
+print(minimum_conversion_time(strPwd, strInter, firstSeq, secSeq, timeSeq))
