@@ -1,32 +1,28 @@
-def max_api_files(projects):
-    n = len(projects)
-    dp = [0] * n  # DP array to store max API files up to each project
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+from pyspark.sql.types import IntegerType, StringType
 
-    # Sort projects by their natural order (if required)
-    for i in range(n):
-        dp[i] = projects[i][0]  # Initially set to executing the current project's API files
+# Initialize Spark session
+spark = SparkSession.builder.appName("ProcessCSV").getOrCreate()
 
-    for i in range(1, n):
-        for j in range(i):
-            # Check if the previous project can execute without blocking the current one
-            if j + projects[j][1] < i:
-                dp[i] = max(dp[i], dp[j] + projects[i][0])
+# Define the file paths
+input_file = "path/to/input_file.csv"
+output_file = "path/to/output_file.csv"
 
-    # Return the maximum value from the dp array, which represents the maximum API files that can be executed
-    return max(dp)
+# Define columns to convert to INT
+int_columns = ["col1", "col2", "col3", "col4", "col5", "col6"]
 
+# Read the file with the specified delimiter
+df = spark.read.option("delimiter", "~}|").option("header", "true").csv(input_file)
 
-if __name__ == "__main__":
-    # Input
-    projects_row, projects_col = map(int, input().split())
-    projects = []
+# Cast specified columns to INT (if possible), and keep other columns as STRING
+for col_name in df.columns:
+    if col_name in int_columns:
+        # Convert to INT, replacing non-convertible values with NULL
+        df = df.withColumn(col_name, col(col_name).cast(IntegerType()))
+    else:
+        # Ensure other columns are cast as STRING
+        df = df.withColumn(col_name, col(col_name).cast(StringType()))
 
-    for _ in range(projects_row):
-        api_files, blockage = map(int, input().split())
-        projects.append((api_files, blockage))
-
-    # Compute the result
-    result = max_api_files(projects)
-
-    # Output the result
-    print(result)
+# Write the updated DataFrame back to a CSV file
+df.write.option("header", "true").option("delimiter", "~}|").mode("overwrite").csv(output_file)
