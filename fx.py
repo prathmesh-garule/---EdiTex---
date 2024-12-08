@@ -1,28 +1,26 @@
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col
-from pyspark.sql.types import IntegerType, StringType
+def add_column_at_position_five(filename):
+    input_file = path_in + filename + ".csv"
 
-# Initialize Spark session
-spark = SparkSession.builder.appName("ProcessCSV").getOrCreate()
+    # Read the file content
+    with open(input_file, "r") as f:
+        lines = f.readlines()
 
-# Define the file paths
-input_file = "path/to/input_file.csv"
-output_file = "path/to/output_file.csv"
+    # Open the file to write the updated content
+    with open(input_file, "w") as f:
+        for i, line in enumerate(lines):
+            # Process the header row
+            if i == 0:
+                headers = line.strip().split(",")
+                # Insert the new column name at the 5th position (index 4)
+                headers.insert(4, "description")
+                f.write(",".join(headers) + "\n")
+            else:
+                # For other rows, add an empty value at the 5th position
+                row = line.strip().split(",")
+                row.insert(4, "")
+                f.write(",".join(row) + "\n")
 
-# Define columns to convert to INT
-int_columns = ["col1", "col2", "col3", "col4", "col5", "col6"]
-
-# Read the file with the specified delimiter
-df = spark.read.option("delimiter", "~}|").option("header", "true").csv(input_file)
-
-# Cast specified columns to INT (if possible), and keep other columns as STRING
-for col_name in df.columns:
-    if col_name in int_columns:
-        # Convert to INT, replacing non-convertible values with NULL
-        df = df.withColumn(col_name, col(col_name).cast(IntegerType()))
-    else:
-        # Ensure other columns are cast as STRING
-        df = df.withColumn(col_name, col(col_name).cast(StringType()))
-
-# Write the updated DataFrame back to a CSV file
-df.write.option("header", "true").option("delimiter", "~}|").mode("overwrite").csv(output_file)
+# Example usage
+filename = "example"
+path_in = "/path/to/csv/"
+add_column_at_position_five(filename)
