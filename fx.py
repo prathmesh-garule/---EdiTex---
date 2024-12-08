@@ -1,38 +1,30 @@
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col
-from pyspark.sql.types import IntegerType, StringType
-import os
-import shutil
+def add_description(filename, position):
+    input_file = path_in + filename + ".csv"
 
-# Initialize Spark session
-spark = SparkSession.builder.appName("ProcessCSV").getOrCreate()
+    # Read the file content
+    with open(input_file, "r") as f:
+        lines = f.readlines()
 
-# Define the file paths
-input_file = "path/to/input_file.csv"
-output_file = "path/to/output_file.csv"
-temp_output_dir = "path/to/temp_output"
+    # Check if 'description' column already exists
+    headers = lines[0].strip().split(",")
+    if "description" in headers:
+        print("Description column already exists. No changes made.")
+        return
 
-# Define columns to convert to INT
-int_columns = ["statuscode", "ubs_leadsourceoption", "ubs_sourceoption", 
-               "statecode", "ubs_originatingactivitytypeoption", "ubs_checkingaccountoption"]
+    # Open the file to write the updated content
+    with open(input_file, "w") as f:
+        for i, line in enumerate(lines):
+            if i == 0:
+                # Insert the 'description' column at the specified position
+                headers.insert(position, "description")
+                f.write(",".join(headers) + "\n")
+            else:
+                # Add an empty value for the 'description' column
+                row = line.strip().split(",")
+                row.insert(position, "")
+                f.write(",".join(row) + "\n")
 
-# Read the file with the specified delimiter
-df = spark.read.option("delimiter", "~}|").option("header", "true").csv(input_file)
-
-# Cast specified columns to INT, and other columns to STRING
-for col_name in df.columns:
-    if col_name in int_columns:
-        df = df.withColumn(col_name, col(col_name).cast(IntegerType()))
-    else:
-        df = df.withColumn(col_name, col(col_name).cast(StringType()))
-
-# Write the DataFrame as a single CSV file
-df.coalesce(1).write.option("header", "true").option("delimiter", "~}|").mode("overwrite").csv(temp_output_dir)
-
-# Move the single part file to the desired output location with the correct name
-for file in os.listdir(temp_output_dir):
-    if file.startswith("part-") and file.endswith(".csv"):
-        shutil.move(os.path.join(temp_output_dir, file), output_file)
-
-# Clean up temporary directory
-shutil.rmtree(temp_output_dir)
+# Example usage
+filename = "example"
+path_in = "/path/to/csv/"
+add_description(filename, 2)
