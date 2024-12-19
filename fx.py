@@ -1,30 +1,24 @@
-def add_description(filename, position):
-    input_file = path_in + filename + ".csv"
+import pandas as pd
 
-    # Read the file content
-    with open(input_file, "r") as f:
-        lines = f.readlines()
+def replace_delimiter_clientteam(filename):
+    input_path = path_out + filename + ".csv"
+    temp_path = path_out + filename + "_temp.csv"
 
-    # Check if 'description' column already exists
-    headers = lines[0].strip().split(",")
-    if "description" in headers:
-        print("Description column already exists. No changes made.")
-        return
+    # Step 1: Replace the delimiter in chunks
+    with open(temp_path, "w") as f:
+        for chunk in pd.read_csv(input_path, chunksize=50000):
+            # Write the chunk to a temporary file with the new delimiter
+            chunk.to_csv(f, sep="~", index=False, header=f.tell() == 0, mode='a')
 
-    # Open the file to write the updated content
-    with open(input_file, "w") as f:
-        for i, line in enumerate(lines):
-            if i == 0:
-                # Insert the 'description' column at the specified position
-                headers.insert(position, "description")
-                f.write(",".join(headers) + "\n")
-            else:
-                # Add an empty value for the 'description' column
-                row = line.strip().split(",")
-                row.insert(position, "")
-                f.write(",".join(row) + "\n")
+    # Step 2: Replace "~" with "~}|"
+    with open(temp_path, "r") as f:
+        content = f.read()
 
-# Example usage
-filename = "example"
-path_in = "/path/to/csv/"
-add_description(filename, 2)
+    content = content.replace("~", "~}|")
+
+    # Step 3: Write the final content back to the original file
+    with open(input_path, "w") as f:
+        f.write(content)
+
+    # Step 4: Clean up (optional)
+    # If needed, remove the temp file or handle further processing
