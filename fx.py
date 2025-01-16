@@ -1,24 +1,10 @@
-import pandas as pd
+chunk_size = 100000  # Define the chunk size
+num_chunks = (df2.count() // chunk_size) + 1  # Calculate the number of chunks
 
-def replace_delimiter_clientteam(filename):
-    input_path = path_out + filename + ".csv"
-    temp_path = path_out + filename + "_temp.csv"
+chunks = df2.rdd.zipWithIndex().map(lambda x: (x[1] // chunk_size, x[0])).groupByKey()
 
-    # Step 1: Replace the delimiter in chunks
-    with open(temp_path, "w") as f:
-        for chunk in pd.read_csv(input_path, chunksize=50000):
-            # Write the chunk to a temporary file with the new delimiter
-            chunk.to_csv(f, sep="~", index=False, header=f.tell() == 0, mode='a')
-
-    # Step 2: Replace "~" with "~}|"
-    with open(temp_path, "r") as f:
-        content = f.read()
-
-    content = content.replace("~", "~}|")
-
-    # Step 3: Write the final content back to the original file
-    with open(input_path, "w") as f:
-        f.write(content)
-
-    # Step 4: Clean up (optional)
-    # If needed, remove the temp file or handle further processing
+for chunk_id, chunk_data in chunks.collect():
+    chunk_df = spark.createDataFrame(chunk_data)
+    pandas_chunk = chunk_df.toPandas()
+    # Process or save pandas_chunk here
+    print(f"Processed chunk {chunk_id}")
