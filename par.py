@@ -1,18 +1,7 @@
-from pyspark.sql import SparkSession
+chunk_size = 100000  # Define chunk size
+total_rows = df2.count()  # Total rows in the DataFrame
 
-spark = SparkSession.builder.appName("ParquetToCSV").getOrCreate()
-
-input_parquet_file = "path/to/input_file.parquet"
-output_csv_file = "path/to/output_file.csv"
-
-df = spark.read.parquet(input_parquet_file)
-
-df.createOrReplaceTempView("parquet_table")
-spark.sql("SELECT * FROM parquet_table").show()
-
-df.write.option("header", "true").option("delimiter", "~}|").mode("overwrite").csv(output_csv_file)
-
-df_csv = spark.read.option("delimiter", "~}|").option("header", "true").csv(output_csv_file)
-
-df_csv.createOrReplaceTempView("csv_table")
-spark.sql("SELECT * FROM csv_table").show()
+for start in range(0, total_rows, chunk_size):
+    chunk_df = df2.filter(f"row_number() BETWEEN {start + 1} AND {start + chunk_size}")  # Fetch rows in chunks
+    chunk_df.write.mode("append").parquet("final_filename.parquet")  # Append to Parquet file
+    print(f"Processed rows {start + 1} to {start + chunk_size}")
